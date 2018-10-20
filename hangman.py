@@ -1,11 +1,14 @@
 ''' A simple clone of hangman, implemented in Python.'''
 
+import time
 import random
-# import blessings
+from blessings import Terminal
 
 CORRECT = 0
 INCORRECT = 1
 REPEAT = 2
+
+term = Terminal()
 
 with open('./wordlist.txt') as file:
     words = [s.strip() for s in file.readlines()]
@@ -32,7 +35,7 @@ class Game():
             for index in indices:
                 self.hidden_word[index] = letter
             return CORRECT
-        elif letter in self.guessed:
+        elif letter in self.guessed or letter in self.hidden_word:
             return REPEAT
         else:
             self.mistakes_left -= 1
@@ -53,39 +56,48 @@ class Game():
 
 
 def main():
-    print('Welcome to Hangman!')
+    print(term.enter_fullscreen)
     game = Game()
     while True:
+        print(term.clear + term.move(0, 0))
         game.print_state()
         inp = input('Please enter a single letter guess or quit to exit: ')
         if inp.lower() == 'quit':
             print()
             print('Bye!')
-            exit(0)
+            time.sleep(0.2)
+            break
         if len(inp) != 1:
-            print('Please enter only a single letter!')
+            print(term.bold_yellow('Please enter only a single letter!'))
+            time.sleep(0.7)
             continue
         letter = inp.upper()
         guess = game.guess(letter)
         if guess == CORRECT:
-            print('Good job!')
+            print(term.bold_green('Good job!'))
             if '_' not in game.hidden_word:
                 print()
                 print("Congrats, you've won!")
                 print(f'The word was {game.word}')
-                exit(0)
+                time.sleep(2)
+                break
+            time.sleep(0.7)
             continue
         elif guess == REPEAT:
-            print("You've already tried that letter!")
+            print(term.bold_yellow("You've already tried that letter!"))
+            time.sleep(0.7)
             continue
         elif guess == INCORRECT:
-            print('Sorry, not the right letter!')
+            print(term.bold_red('Sorry, not the right letter!'))
             if not game.mistakes_left:
                 print()
                 print('Game Over!')
                 print(f'The word was {game.word}!')
-                exit(0)
+                time.sleep(2)
+                break
+            time.sleep(0.7)
             continue
+    print(term.exit_fullscreen)
 
 
 if __name__ == '__main__':
